@@ -29,13 +29,13 @@ export default function Home() {
         <section className="max-w-7xl mx-auto flex flex-col items-center text-center mb-32 relative z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-8">
             <span className="material-symbols-outlined text-[14px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>security</span>
-            <span className="text-[10px] uppercase tracking-widest font-bold text-primary">v3.0 Obsidian Prism Architecture</span>
+            <span className="text-[10px] uppercase tracking-widest font-bold text-primary">Powered by Next.js & AWS S3</span>
           </div>
           <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight text-on-surface mb-8 leading-[1.1]">
             Master the <span className="text-transparent bg-clip-text obsidian-gradient">Entropy</span><br />of Your Data.
           </h1>
           <p className="max-w-2xl text-on-surface-variant text-lg md:text-xl font-light leading-relaxed mb-12 px-4">
-            Surgical precision in data management. Secure, fragmented cloud storage designed for those who treat information as their most valuable asset.
+            High-performance cloud storage. Built with a scalable relational database and secure object storage for low-latency file management.
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <button className="obsidian-gradient text-on-primary-fixed px-8 py-4 text-base font-bold flex items-center gap-2 hover:scale-95 transition-transform">
@@ -96,17 +96,17 @@ export default function Home() {
                     <span className="text-[10px] text-tertiary font-bold tracking-[0.2em] uppercase">Storage Usage</span>
                     <span className="material-symbols-outlined text-tertiary">data_usage</span>
                   </div>
-                  <div className="text-3xl font-headline font-bold text-on-surface mb-2">1.2 TB</div>
+                  <div className="text-3xl font-headline font-bold text-on-surface mb-2">15 GB</div>
                   <div className="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
                     <div className="bg-tertiary w-3/4 h-full"></div>
                   </div>
                 </div>
                 <div className="bg-surface-container-low p-6 rounded-lg border border-outline-variant/10">
                   <div className="flex justify-between items-start mb-4">
-                    <span className="text-[10px] text-primary font-bold tracking-[0.2em] uppercase">Active Nodes</span>
+                    <span className="text-[10px] text-primary font-bold tracking-[0.2em] uppercase">API Latency</span>
                     <span className="material-symbols-outlined text-primary">hub</span>
                   </div>
-                  <div className="text-3xl font-headline font-bold text-on-surface mb-2">12 / 12</div>
+                  <div className="text-3xl font-headline font-bold text-on-surface mb-2">42 ms</div>
                   <div className="text-[10px] text-on-surface-variant">Global redundancy operational.</div>
                 </div>
                 <div className="sm:col-span-2 bg-surface-container-high/20 p-6 rounded-lg border border-outline-variant/10">
@@ -131,7 +131,7 @@ export default function Home() {
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-6 text-primary">
                   <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>shield_lock</span>
                 </div>
-                <h3 className="text-2xl font-headline font-bold text-on-surface mb-4">Quantum-Grade Sharding</h3>
+                <h3 className="text-2xl font-headline font-bold text-on-surface mb-4">Secure Object Storage</h3>
                 <p className="text-on-surface-variant leading-relaxed">Files are sliced into non-identifiable shards before leaving your device. No single node ever holds enough data to reconstruct a single file.</p>
               </div>
               <div className="mt-12 overflow-hidden rounded-lg">
@@ -153,47 +153,51 @@ export default function Home() {
                 </div>
               </div>
             </div>
+            {/* Feature 3: API First */}
             <div className="md:col-span-1 bg-surface-container p-6 rounded-xl border border-outline-variant/10 hover:border-primary/30 transition-all">
               <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mb-4 text-primary">
                 <span className="material-symbols-outlined">api</span>
               </div>
               <h3 className="text-lg font-headline font-bold text-on-surface mb-2">API First</h3>
-              <p className="text-xs text-on-surface-variant">Seamlessly integrate Obsidian sharding into your existing enterprise stack.</p>
+              <p className="text-xs text-on-surface-variant">Built with Next.js Server Actions and highly optimized API routes for rapid, secure data mutation.</p>
             </div>
+            
+            {/* Feature 4: Authentication */}
             <div className="md:col-span-1 bg-surface-container p-6 rounded-xl border border-outline-variant/10 hover:border-primary/30 transition-all">
               <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mb-4 text-primary">
-                <span className="material-symbols-outlined">history</span>
+                <span className="material-symbols-outlined">lock</span>
               </div>
-              <h3 className="text-lg font-headline font-bold text-on-surface mb-2">Temporal State</h3>
-              <p className="text-xs text-on-surface-variant">Immutable versioning allows you to roll back your entire data state to any nanosecond.</p>
+              <h3 className="text-lg font-headline font-bold text-on-surface mb-2">Seamless Auth</h3>
+              <p className="text-xs text-on-surface-variant">Enterprise-grade identity management and secure isolated user sessions powered by Clerk.</p>
             </div>
           </div>
         </section>
 
 
-      <section className="max-w-[90vw] md:max-w-5xl mx-auto mb-20">
-        <div className="bg-surface-container-highest rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-12 overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[80px]"></div>
-          <div className="flex-1 z-10 text-center md:text-left">
-            <h2 className="font-headline text-3xl font-bold text-on-surface mb-4">Join the Collective.</h2>
-            <p className="text-on-surface-variant mb-8">Discuss decentralized storage architecture, data sovereignty, and security protocols with our global community.</p>
-            <button className="px-8 py-3 bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold rounded flex items-center gap-2 mx-auto md:mx-0 transition-colors">
-              <span className="material-symbols-outlined">group</span>
-              Enter Discord
-            </button>
+        <section className="max-w-[90vw] md:max-w-5xl mx-auto mb-20">
+          <div className="bg-surface-container-highest rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-12 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[80px]"></div>
+            <div className="flex-1 z-10 text-center md:text-left">
+              <h2 className="font-headline text-3xl font-bold text-on-surface mb-4">Transparent & Open Source.</h2>
+              <p className="text-on-surface-variant mb-8">Dive into the architecture. Review the database schemas, API routes, and AWS integration on GitHub.</p>
+              
+              <button className="px-8 py-3 bg-[#24292f] hover:bg-[#1b1f24] border border-outline-variant/20 text-white font-bold rounded flex items-center gap-2 mx-auto md:mx-0 transition-colors shadow-lg">
+                <span className="material-symbols-outlined">code</span>
+                View Source Code
+              </button>
+            </div>
+            <div className="flex-1 relative z-10 w-full md:w-auto">
+              <img className="w-full h-48 object-cover rounded-xl border border-outline-variant/20 shadow-2xl" data-alt="High-tech aesthetic background showing a stylized digital network grid in deep violet and blue" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZynVEygXNrRVRVlbUbMCl5GuGdss0Htv80oCeMsx_XwJ-r72QidYiIj43LBtvvuY_5dmxVT35VuKfh7pZLEhDoHTYjU-1xA7-G5Iaz6e8Tb4F3i0wjkC7cLapt9_RDQTHN3LyZzZDUiFDPczpRdoZzxI63wWNNyFKYLY46Swjv-Vr_fh9rMNxjhcnQn7mVKNa16-ymfkkZvayjxR1DOBcBR8go6k3tEcUZn26hFk5zNXML5CZRO-dO23kH5zhdR1rfHcDuYAX6WM" />
+            </div>
           </div>
-          <div className="flex-1 relative z-10 w-full md:w-auto">
-            <img className="w-full h-48 object-cover rounded-xl border border-outline-variant/20 shadow-2xl" data-alt="High-tech aesthetic background showing a stylized digital network grid in deep violet and blue" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZynVEygXNrRVRVlbUbMCl5GuGdss0Htv80oCeMsx_XwJ-r72QidYiIj43LBtvvuY_5dmxVT35VuKfh7pZLEhDoHTYjU-1xA7-G5Iaz6e8Tb4F3i0wjkC7cLapt9_RDQTHN3LyZzZDUiFDPczpRdoZzxI63wWNNyFKYLY46Swjv-Vr_fh9rMNxjhcnQn7mVKNa16-ymfkkZvayjxR1DOBcBR8go6k3tEcUZn26hFk5zNXML5CZRO-dO23kH5zhdR1rfHcDuYAX6WM" />
-          </div>
-        </div>
-      </section>
+        </section>
       </main>
 
       {/* Footer Shell */}
       <footer className="w-full bg-[#000000] py-12 px-8 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-outline-variant/5">
         <div className="flex flex-col items-center md:items-start gap-2">
           <span className="text-lg font-black text-[#e4e1e6] font-headline tracking-widest">FILESCAPE</span>
-          <p className="font-body text-[10px] uppercase tracking-widest text-on-surface-variant">© 2024 FileScape. Surgical precision in data management.</p>
+          <p className="font-body text-[10px] uppercase tracking-widest text-on-surface-variant">&copy; 2026 Codespec Cloud.</p>
         </div>
         <div className="flex gap-4">
           <div className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors cursor-pointer">
