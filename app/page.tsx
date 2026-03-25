@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { Show, UserButton } from "@clerk/nextjs";
+
 export default function Home() {
   return (
     <>
@@ -12,10 +15,23 @@ export default function Home() {
           <a className="text-[#e4e1e6] hover:text-[#de8eff] transition-colors" href="#">Security</a>
           <a className="text-[#e4e1e6] hover:text-[#de8eff] transition-colors" href="#">About</a>
         </div>
-        <div className="flex items-center gap-4">
+        {/* <div className="flex items-center gap-4">
           <button className="obsidian-gradient text-on-primary-fixed px-5 py-2 rounded-full text-sm font-bold tracking-tight hover:scale-95 active:scale-90 transition-transform shadow-[0_4px_12px_rgba(222,142,255,0.3)]">
             Get Started
           </button>
+        </div> */}
+        <div className="flex items-center gap-4">
+          <Show when="signed-out">
+            <Link href="/sign-up" className="obsidian-gradient text-on-primary-fixed px-5 py-2 rounded-full text-sm font-bold tracking-tight hover:scale-95 active:scale-90 transition-transform shadow-[0_4px_12px_rgba(222,142,255,0.3)]">
+              Get Started
+            </Link>
+          </Show>
+          <Show when="signed-in">
+            <Link href="/dashboard" className="bg-surface-container border border-outline-variant/30 text-on-surface px-5 py-2 rounded-full text-sm font-bold hover:bg-surface-container-high transition-colors">
+              Dashboard
+            </Link>
+            <UserButton /> 
+          </Show>
         </div>
       </nav>
 
@@ -37,7 +53,7 @@ export default function Home() {
           <p className="max-w-2xl text-on-surface-variant text-lg md:text-xl font-light leading-relaxed mb-12 px-4">
             High-performance cloud storage. Built with a scalable relational database and secure object storage for low-latency file management.
           </p>
-          <div className="flex flex-col sm:flex-row items-center gap-4">
+          {/* <div className="flex flex-col sm:flex-row items-center gap-4">
             <button className="obsidian-gradient text-on-primary-fixed px-8 py-4 text-base font-bold flex items-center gap-2 hover:scale-95 transition-transform">
               Initialize Deployment
               <span className="material-symbols-outlined">arrow_forward</span>
@@ -45,6 +61,15 @@ export default function Home() {
             <button className="bg-surface-container border border-outline-variant/30 text-on-surface px-8 py-4 text-base font-bold hover:bg-surface-container-high transition-colors">
               Watch Interface Demo
             </button>
+          </div> */}
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <Link href="/sign-up" className="obsidian-gradient text-on-primary-fixed px-8 py-4 text-base font-bold flex items-center gap-2 hover:scale-95 transition-transform rounded-lg">
+              Initialize Deployment
+              <span className="material-symbols-outlined">arrow_forward</span>
+            </Link>
+            <Link href="/sign-in" className="bg-surface-container border border-outline-variant/30 text-on-surface px-8 py-4 text-base font-bold hover:bg-surface-container-high transition-colors rounded-lg">
+              Existing Node Login
+            </Link>
           </div>
         </section>
 
@@ -161,7 +186,7 @@ export default function Home() {
               <h3 className="text-lg font-headline font-bold text-on-surface mb-2">API First</h3>
               <p className="text-xs text-on-surface-variant">Built with Next.js Server Actions and highly optimized API routes for rapid, secure data mutation.</p>
             </div>
-            
+
             {/* Feature 4: Authentication */}
             <div className="md:col-span-1 bg-surface-container p-6 rounded-xl border border-outline-variant/10 hover:border-primary/30 transition-all">
               <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mb-4 text-primary">
@@ -180,7 +205,7 @@ export default function Home() {
             <div className="flex-1 z-10 text-center md:text-left">
               <h2 className="font-headline text-3xl font-bold text-on-surface mb-4">Transparent & Open Source.</h2>
               <p className="text-on-surface-variant mb-8">Dive into the architecture. Review the database schemas, API routes, and AWS integration on GitHub.</p>
-              
+
               <button className="px-8 py-3 bg-[#24292f] hover:bg-[#1b1f24] border border-outline-variant/20 text-white font-bold rounded flex items-center gap-2 mx-auto md:mx-0 transition-colors shadow-lg">
                 <span className="material-symbols-outlined">code</span>
                 View Source Code
