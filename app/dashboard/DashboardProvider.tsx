@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { getUserFiles } from "../../actions/fileActions";
 
-interface FileData {
+export interface FileData {
   fileId: string;
   fileName: string;
   fileSize: number;
@@ -11,6 +11,11 @@ interface FileData {
   createdAt: string;
   isStarred: boolean;
   s3Key: string;
+  shareSettings?: {
+    type: "private" | "public" | "restricted";
+    expiresAt?: string | null;
+    allowedEmails?: string[];
+  };
 }
 
 export interface BreakdownItem {

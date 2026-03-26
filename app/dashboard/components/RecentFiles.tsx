@@ -1,6 +1,6 @@
 "use client";
 
-import { useDashboard } from "../DashboardProvider";
+import { FileData, useDashboard } from "../DashboardProvider";
 import { getDownloadUrl, deleteFile, toggleStarFile } from "../../../actions/fileActions";
 import toast from "react-hot-toast";
 import ShareModal from "./ShareModal";
@@ -23,7 +23,8 @@ export default function RecentFiles() {
     isLoadingFiles, isRefreshing, refreshFiles
   } = useDashboard();
 
-  const [sharingFile, setSharingFile] = useState<{ id: string, name: string } | null>(null);
+  // Replace the old sharingFile state with this:
+  const [sharingFile, setSharingFile] = useState<FileData | null>(null);
 
   const filteredFiles = files.filter(file => {
     const matchesSearch = file.fileName.toLowerCase().includes(searchQuery.toLowerCase());
@@ -128,7 +129,7 @@ export default function RecentFiles() {
 
                 {/* NEW SHARE BUTTON */}
                 <button
-                  onClick={() => setSharingFile({ id: file.fileId, name: file.fileName })}
+                  onClick={() => setSharingFile(file)}
                   className="p-2 text-on-surface-variant hover:text-primary transition-all bg-surface-container rounded-md"
                   title="Share File"
                 >
@@ -158,10 +159,9 @@ export default function RecentFiles() {
       </div>
       {/* Render the modal if a file is selected */}
       {sharingFile && (
-        <ShareModal
-          fileId={sharingFile.id}
-          fileName={sharingFile.name}
-          onClose={() => setSharingFile(null)}
+        <ShareModal 
+          file={sharingFile} 
+          onClose={() => setSharingFile(null)} 
         />
       )}
     </div>
