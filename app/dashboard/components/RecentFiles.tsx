@@ -2,6 +2,7 @@
 
 import { useDashboard } from "../DashboardProvider";
 import { getDownloadUrl, deleteFile, toggleStarFile } from "../../../actions/fileActions";
+import toast from "react-hot-toast";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 Bytes';
@@ -14,18 +15,18 @@ function formatBytes(bytes: number, decimals = 2) {
 
 export default function RecentFiles() {
   // 1. Pull EVERYTHING from the global context instead of managing it locally
-  const { 
-    searchQuery, activeCategory, 
-    files, setFiles, 
-    isLoadingFiles, isRefreshing, refreshFiles 
+  const {
+    searchQuery, activeCategory,
+    files, setFiles,
+    isLoadingFiles, isRefreshing, refreshFiles
   } = useDashboard();
 
   const filteredFiles = files.filter(file => {
     const matchesSearch = file.fileName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = 
-      activeCategory === "home" ? true : 
-      activeCategory === "recent" ? true : 
-      activeCategory === "starred" ? file.isStarred : true;
+    const matchesCategory =
+      activeCategory === "home" ? true :
+        activeCategory === "recent" ? true :
+          activeCategory === "starred" ? file.isStarred : true;
 
     return matchesSearch && matchesCategory;
   });
@@ -40,19 +41,20 @@ export default function RecentFiles() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-      } else alert("Failed to securely fetch file.");
+      } else {
+        toast.error("Failed to securely fetch file.");
+      }
     } catch (error) { console.error(error); }
   };
 
   const handleDelete = async (fileId: string, s3Key: string) => {
     const previousFiles = [...files];
-    setFiles(files.filter(file => file.fileId !== fileId)); 
+    setFiles(files.filter(file => file.fileId !== fileId));
     try {
       const response = await deleteFile(fileId, s3Key);
       if (!response.success) throw new Error("Database deletion failed");
     } catch (error) {
-      console.error(error);
-      alert("Failed to delete file. Reverting changes.");
+      toast.error("Failed to delete file. Reverting changes");
       setFiles(previousFiles);
     }
   };
@@ -62,7 +64,7 @@ export default function RecentFiles() {
     const response = await toggleStarFile(fileId, currentStatus);
     if (!response.success) {
       setFiles(files.map(f => f.fileId === fileId ? { ...f, isStarred: currentStatus } : f));
-      alert("Failed to update star status.");
+      toast.error("Failed to update star status.");
     }
   };
 
@@ -75,9 +77,9 @@ export default function RecentFiles() {
         <h2 className="text-xl font-headline font-bold text-secondary tracking-tight">
           {activeCategory === "home" ? "All Files" : activeCategory === "recent" ? "Recent Files" : "Starred Files"}
         </h2>
-        
+
         {/* Refresh Button */}
-        <button 
+        <button
           onClick={refreshFiles}
           disabled={isRefreshing}
           className="p-2 text-on-surface-variant hover:text-primary transition-colors bg-surface-container-lowest border border-outline-variant/10 rounded-lg flex items-center justify-center disabled:opacity-50"
@@ -101,25 +103,25 @@ export default function RecentFiles() {
             <div key={file.fileId} className="group flex items-center gap-4 p-4 rounded-lg hover:bg-surface-container-highest transition-all">
               <div className="w-10 h-10 bg-primary/10 flex items-center justify-center rounded text-primary shrink-0">
                 <span className="material-symbols-outlined">
-                  {file.fileType.includes('pdf') ? 'description' : 
-                   file.fileType.includes('image') ? 'image' : 
-                   file.fileType.includes('video') ? 'movie' : 
-                   file.fileType.includes('json') ? 'code' : 'table_chart'}
+                  {file.fileType.includes('pdf') ? 'description' :
+                    file.fileType.includes('image') ? 'image' :
+                      file.fileType.includes('video') ? 'movie' :
+                        file.fileType.includes('json') ? 'code' : 'table_chart'}
                 </span>
               </div>
-              
+
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-medium text-secondary truncate">{file.fileName}</h3>
                 <p className="text-xs text-on-surface-variant">
                   Uploaded {new Date(file.createdAt).toLocaleDateString()} • {formatBytes(file.fileSize)}
                 </p>
               </div>
-              
+
               <div className="flex gap-2 items-center opacity-0 group-hover:opacity-100 transition-all shrink-0">
-                
+
                 {/* 4. The New Star Button */}
-                <button 
-                  onClick={() => handleStarToggle(file.fileId, file.isStarred)} 
+                <button
+                  onClick={() => handleStarToggle(file.fileId, file.isStarred)}
                   className={`p-2 transition-all bg-surface-container rounded-md ${file.isStarred ? 'text-[#de8eff] hover:text-[#de8eff]/80' : 'text-on-surface-variant hover:text-primary'}`}
                 >
                   <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: file.isStarred ? "'FILL' 1" : "'FILL' 0" }}>

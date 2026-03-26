@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import { DashboardProvider, useDashboard } from "./DashboardProvider";
+import { Toaster } from "react-hot-toast";
 
 // We separate the Sidebar content so it can consume the Context
 function Sidebar() {
@@ -57,6 +58,7 @@ function Sidebar() {
         {/* Minimize Button - Statically Pinned to the Left */}
         <div className="w-full px-4 mb-4 flex justify-start">
           <button
+            //@ts-ignore
             onClick={() => setIsSidebarOpen(prev => !prev)}
             className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors bg-surface-container rounded-lg shrink-0"
           >
@@ -89,6 +91,29 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     <DashboardProvider>
       <div className="min-h-screen bg-surface flex text-on-surface font-body overflow-x-hidden relative">
         <div className="fixed top-0 right-0 w-150 h-150 light-leak pointer-events-none -z-10"></div>
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            style: {
+              background: '#5C555C', // surface-container
+              color: '#e4e1e6', // secondary text
+              border: '1px solid rgba(72, 72, 73, 0.2)', // outline-variant/20
+              fontSize: '14px',
+            },
+            success: {
+              iconTheme: {
+                primary: '#de8eff', // primary
+                secondary: '#5C555C', // surface-container
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#ff6e84', // error
+                secondary: '#5C555C', // surface-container
+              },
+            },
+          }}
+        />
         <Sidebar />
 
         {/* The DashboardProvider context makes this wrapper dynamic */}
