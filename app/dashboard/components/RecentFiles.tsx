@@ -3,6 +3,8 @@
 import { useDashboard } from "../DashboardProvider";
 import { getDownloadUrl, deleteFile, toggleStarFile } from "../../../actions/fileActions";
 import toast from "react-hot-toast";
+import ShareModal from "./ShareModal";
+import { useState } from "react";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 Bytes';
@@ -21,17 +23,19 @@ export default function RecentFiles() {
     isLoadingFiles, isRefreshing, refreshFiles
   } = useDashboard();
 
+  const [sharingFile, setSharingFile] = useState<{ id: string, name: string } | null>(null);
+
   const filteredFiles = files.filter(file => {
     const matchesSearch = file.fileName.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     // Date Math: 7 days * 24 hours * 60 minutes * 60 seconds * 1000 milliseconds
     const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
     const fileDate = new Date(file.createdAt).getTime();
 
-    const matchesCategory = 
-      activeCategory === "home" ? true : 
-      activeCategory === "recent" ? fileDate >= sevenDaysAgo : 
-      activeCategory === "starred" ? file.isStarred : true;
+    const matchesCategory =
+      activeCategory === "home" ? true :
+        activeCategory === "recent" ? fileDate >= sevenDaysAgo :
+          activeCategory === "starred" ? file.isStarred : true;
 
     return matchesSearch && matchesCategory;
   });
@@ -72,8 +76,6 @@ export default function RecentFiles() {
       toast.error("Failed to update star status.");
     }
   };
-
-  // ... KEEP YOUR EXACT SAME return (...) JSX DOWN HERE ...
 
   return (
     <div className="p-6 flex flex-col h-full overflow-hidden">
@@ -124,6 +126,15 @@ export default function RecentFiles() {
 
               <div className="flex gap-2 items-center opacity-0 group-hover:opacity-100 transition-all shrink-0">
 
+                {/* NEW SHARE BUTTON */}
+                <button
+                  onClick={() => setSharingFile({ id: file.fileId, name: file.fileName })}
+                  className="p-2 text-on-surface-variant hover:text-primary transition-all bg-surface-container rounded-md"
+                  title="Share File"
+                >
+                  <span className="material-symbols-outlined text-[18px]">share</span>
+                </button>
+
                 {/* 4. The New Star Button */}
                 <button
                   onClick={() => handleStarToggle(file.fileId, file.isStarred)}
@@ -145,6 +156,14 @@ export default function RecentFiles() {
           ))
         )}
       </div>
+      {/* Render the modal if a file is selected */}
+      {sharingFile && (
+        <ShareModal
+          fileId={sharingFile.id}
+          fileName={sharingFile.name}
+          onClose={() => setSharingFile(null)}
+        />
+      )}
     </div>
   );
 }

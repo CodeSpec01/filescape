@@ -170,3 +170,29 @@ export async function toggleStarFile(fileId: string, currentStatus: boolean) {
     return { success: false, error: "Failed to update star status." };
   }
 }
+
+export async function updateShareSettings(
+  fileId: string, 
+  settings: { type: "private" | "public" | "restricted", expiresAt?: string | null, allowedEmails?: string[] }
+) {
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
+
+    const command = new UpdateCommand({
+      TableName: TABLE_NAME,
+      Key: { fileId: fileId },
+      // We store the settings as a JSON object in DynamoDB
+      UpdateExpression: "SET shareSettings = :settings",
+      ExpressionAttributeValues: {
+        ":settings": settings,
+      },
+    });
+
+    await dynamoDbClient.send(command);
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update share settings:", error);
+    return { success: false, error: "Failed to update sharing permissions." };
+  }
+}

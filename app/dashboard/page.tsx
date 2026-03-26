@@ -33,6 +33,7 @@ export default function DashboardPage() {
           
           <div className="absolute top-4 right-3 z-50">
             <button 
+            //@ts-ignore
               onClick={() => setIsRightPanelOpen(prev => !prev)}
               className="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors bg-surface-container rounded-lg"
             >

@@ -17,9 +17,9 @@ export default function S3Status() {
       {/* Background Orbs: Pushed to the back (-z-10) and positioned as distinct glowing circles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
         {/* Top-Left Orb */}
-        <div className="absolute top-[-10%] left-[5%] w-64 h-64 bg-primary/10 rounded-full blur-[60px] animate-pulse"></div>
+        <div className="absolute top-[-10%] left-[5%] w-64 h-64 bg-primary/20 rounded-full blur-[60px] animate-pulse"></div>
         {/* Bottom-Right Orb */}
-        <div className="absolute bottom-0 right-[5%] w-48 h-48 bg-tertiary/10 rounded-full blur-[50px] animate-pulse" style={{ animationDuration: '4s' }}></div>
+        <div className="absolute -bottom-[20%] right-[5%] w-48 h-48 bg-tertiary/30 rounded-full blur-[50px] animate-pulse" style={{ animationDuration: '4s' }}></div>
       </div>
 
       <div className="h-14 flex justify-between items-center px-6 shrink-0 border-b border-outline-variant/5 z-10">
@@ -31,6 +31,7 @@ export default function S3Status() {
         </div>
         
         <button 
+        //@ts-ignore
           onClick={() => setIsS3StatusOpen(prev => !prev)}
           className="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors bg-surface-container rounded-lg"
         >
