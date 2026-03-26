@@ -10,7 +10,7 @@ import crypto from "crypto";
 const BUCKET_NAME = process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME!;
 const TABLE_NAME = process.env.NEXT_PUBLIC_DYNAMODB_TABLE_NAME!;
 
-export async function getPresignedUploadUrl(fileName: string, fileType: string, fileSize: number) {
+export async function getPresignedUploadUrl(fileName: string, fileType: string, fileSize: number, parentId: string = "root") {
   // 1. Verify the user is authenticated via Clerk
   const { userId } = await auth();
   if (!userId) {
@@ -44,6 +44,7 @@ export async function getPresignedUploadUrl(fileName: string, fileType: string, 
         fileSize: fileSize,
         s3Key: s3Key,
         isStarred: false,
+        parentId: parentId,
         createdAt: new Date().toISOString(), // This acts as our Sort Key!
       },
     });
@@ -194,5 +195,35 @@ export async function updateShareSettings(
   } catch (error) {
     console.error("Failed to update share settings:", error);
     return { success: false, error: "Failed to update sharing permissions." };
+  }
+}
+
+export async function createFolder(folderName: string, parentId: string = "root") {
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
+
+    const folderId = crypto.randomUUID();
+
+    const dbCommand = new PutCommand({
+      TableName: TABLE_NAME,
+      Item: {
+        fileId: folderId,
+        userId: userId,
+        fileName: folderName,
+        fileType: "folder", // This is how UI knows it's a folder
+        fileSize: 0,
+        s3Key: `folder-${folderId}`, // Placeholder, folders don't have physical S3 files
+        isStarred: false,
+        parentId: parentId,
+        createdAt: new Date().toISOString(),
+      },
+    });
+
+    await dynamoDbClient.send(dbCommand);
+    return { success: true, folderId };
+  } catch (error) {
+    console.error("Create folder failed:", error);
+    return { success: false, error: "Failed to create folder." };
   }
 }

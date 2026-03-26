@@ -1,10 +1,10 @@
 "use client";
 
-import { FileData, useDashboard } from "../DashboardProvider";
-import { getDownloadUrl, deleteFile, toggleStarFile } from "../../../actions/fileActions";
-import toast from "react-hot-toast";
-import ShareModal from "./ShareModal";
 import { useState } from "react";
+import { useDashboard } from "../DashboardProvider";
+import { getDownloadUrl, deleteFile, toggleStarFile, createFolder } from "../../../actions/fileActions";
+import ShareModal from "./ShareModal";
+import toast from "react-hot-toast";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 Bytes';
@@ -16,30 +16,64 @@ function formatBytes(bytes: number, decimals = 2) {
 }
 
 export default function RecentFiles() {
-  // 1. Pull EVERYTHING from the global context instead of managing it locally
   const {
     searchQuery, activeCategory,
     files, setFiles,
-    isLoadingFiles, isRefreshing, refreshFiles
+    isLoadingFiles, isRefreshing, refreshFiles,
+    currentFolderId, setCurrentFolderId,
+    folderHistory, setFolderHistory
   } = useDashboard();
 
-  // Replace the old sharingFile state with this:
-  const [sharingFile, setSharingFile] = useState<FileData | null>(null);
+  const [sharingFile, setSharingFile] = useState<any | null>(null);
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
 
+  // FILTER LOGIC: Apply search, category, AND folder visibility
   const filteredFiles = files.filter(file => {
     const matchesSearch = file.fileName.toLowerCase().includes(searchQuery.toLowerCase());
 
-    // Date Math: 7 days * 24 hours * 60 minutes * 60 seconds * 1000 milliseconds
-    const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-    const fileDate = new Date(file.createdAt).getTime();
+    // If searching or viewing 'Starred'/'Recent', ignore folder structure and show everything
+    if (searchQuery || activeCategory !== "home") {
+      const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+      const fileDate = new Date(file.createdAt).getTime();
+      const matchesCategory = activeCategory === "recent" ? fileDate >= sevenDaysAgo :
+        activeCategory === "starred" ? file.isStarred : true;
+      return matchesSearch && matchesCategory && file.fileType !== 'folder';
+    }
 
-    const matchesCategory =
-      activeCategory === "home" ? true :
-        activeCategory === "recent" ? fileDate >= sevenDaysAgo :
-          activeCategory === "starred" ? file.isStarred : true;
-
-    return matchesSearch && matchesCategory;
+    // Otherwise, only show files in the CURRENT folder
+    const fileParentId = file.parentId || "root";
+    return matchesSearch && fileParentId === currentFolderId;
   });
+
+  // FOLDER NAVIGATION LOGIC
+  const handleEnterFolder = (folderId: string, folderName: string) => {
+    setCurrentFolderId(folderId);
+    setFolderHistory([...folderHistory, { id: folderId, name: folderName }]);
+  };
+
+  const handleGoBack = () => {
+    if (folderHistory.length <= 1) return;
+    const newHistory = [...folderHistory];
+    newHistory.pop(); // Remove current folder
+    const previousFolder = newHistory[newHistory.length - 1];
+    setFolderHistory(newHistory);
+    setCurrentFolderId(previousFolder.id);
+  };
+
+  const handleCreateFolder = async () => {
+    if (!newFolderName.trim()) return;
+    setIsCreatingFolder(true);
+    const response = await createFolder(newFolderName.trim(), currentFolderId);
+    if (response.success) {
+      toast.success("Folder created!");
+      setNewFolderName("");
+      await refreshFiles();
+    } else {
+      toast.error("Failed to create folder.");
+    }
+    setIsCreatingFolder(false);
+  };
 
   const handleDownload = async (fileId: string, s3Key: string, fileName: string) => {
     try {
@@ -78,92 +112,102 @@ export default function RecentFiles() {
     }
   };
 
-  return (
-    <div className="p-6 flex flex-col h-full overflow-hidden">
-      {/* Header with new Refresh Button */}
-      <div className="flex justify-between items-center mb-6 shrink-0">
-        <h2 className="text-xl font-headline font-bold text-secondary tracking-tight">
-          {activeCategory === "home" ? "All Files" : activeCategory === "recent" ? "Recent Files" : "Starred Files"}
-        </h2>
 
-        {/* Refresh Button */}
-        <button
-          onClick={refreshFiles}
-          disabled={isRefreshing}
-          className="p-2 text-on-surface-variant hover:text-primary transition-colors bg-surface-container-lowest border border-outline-variant/10 rounded-lg flex items-center justify-center disabled:opacity-50"
-          title="Refresh Files"
-        >
-          <span className={`material-symbols-outlined text-[18px] ${isRefreshing ? 'animate-spin text-primary' : ''}`}>
-            sync
-          </span>
-        </button>
+  return (
+    <div className="p-6 flex flex-col h-full overflow-hidden relative">
+      <div className="flex justify-between items-center mb-6 shrink-0">
+
+        {/* BREADCRUMBS & TITLE */}
+        <div className="flex items-center gap-2">
+          {currentFolderId !== "root" && activeCategory === "home" && !searchQuery && (
+            <button onClick={handleGoBack} className="p-1 mr-2 text-on-surface-variant hover:text-primary transition-colors bg-surface-container-lowest rounded-md">
+              <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+            </button>
+          )}
+          <h2 className="text-xl font-headline font-bold text-secondary tracking-tight">
+            {activeCategory === "home" ? (
+              searchQuery ? "Search Results" : folderHistory[folderHistory.length - 1].name
+            ) : activeCategory === "recent" ? "Recent Files" : "Starred Files"}
+          </h2>
+        </div>
+
+        {/* HEADER CONTROLS */}
+        <div className="flex items-center gap-3">
+          {/* New Folder Input & Button (Only show in Home view) */}
+          {activeCategory === "home" && !searchQuery && (
+            <div className="flex items-center gap-2 bg-surface-container-lowest border border-outline-variant/10 rounded-lg p-1 pr-2">
+              <input
+                type="text"
+                placeholder="New folder..."
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateFolder()}
+                className="bg-transparent text-xs text-secondary px-2 outline-none w-24 focus:w-32 transition-all placeholder:text-on-surface-variant/50"
+              />
+              <button
+                onClick={handleCreateFolder}
+                disabled={isCreatingFolder || !newFolderName.trim()}
+                className="text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-[18px]">create_new_folder</span>
+              </button>
+            </div>
+          )}
+
+          <button onClick={refreshFiles} disabled={isRefreshing} className="p-2 text-on-surface-variant hover:text-primary transition-colors bg-surface-container-lowest border border-outline-variant/10 rounded-lg">
+            <span className={`material-symbols-outlined text-[18px] ${isRefreshing ? 'animate-spin text-primary' : ''}`}>sync</span>
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-2 pr-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {isLoadingFiles ? (
-          <div className="flex justify-center items-center h-full text-primary">
-            <span className="material-symbols-outlined animate-spin text-3xl">sync</span>
-          </div>
+          <div className="flex justify-center items-center h-full text-primary"><span className="material-symbols-outlined animate-spin text-3xl">sync</span></div>
         ) : filteredFiles.length === 0 ? (
-          <p className="text-on-surface-variant text-sm text-center mt-10">No files found.</p>
+          <p className="text-on-surface-variant text-sm text-center mt-10">This folder is empty.</p>
         ) : (
           filteredFiles.map((file) => (
-            <div key={file.fileId} className="group flex items-center gap-4 p-4 rounded-lg hover:bg-surface-container-highest transition-all">
-              <div className="w-10 h-10 bg-primary/10 flex items-center justify-center rounded text-primary shrink-0">
+            <div
+              key={file.fileId}
+              // If it's a folder, double-click opens it!
+              onDoubleClick={() => file.fileType === 'folder' && handleEnterFolder(file.fileId, file.fileName)}
+              className={`group flex items-center gap-4 p-4 rounded-lg hover:bg-surface-container-highest transition-all ${file.fileType === 'folder' ? 'cursor-pointer hover:border-primary/30 border border-transparent' : ''}`}
+            >
+
+              {/* ICON */}
+              <div className={`w-10 h-10 flex items-center justify-center rounded shrink-0 ${file.fileType === 'folder' ? 'bg-secondary/10 text-secondary' : 'bg-primary/10 text-primary'}`}>
                 <span className="material-symbols-outlined">
-                  {file.fileType.includes('pdf') ? 'description' :
-                    file.fileType.includes('image') ? 'image' :
-                      file.fileType.includes('video') ? 'movie' :
-                        file.fileType.includes('json') ? 'code' : 'table_chart'}
+                  {file.fileType === 'folder' ? 'folder' :
+                    file.fileType.includes('pdf') ? 'description' :
+                      file.fileType.includes('image') ? 'image' :
+                        file.fileType.includes('video') ? 'movie' :
+                          file.fileType.includes('json') ? 'code' : 'draft'}
                 </span>
               </div>
 
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-medium text-secondary truncate">{file.fileName}</h3>
                 <p className="text-xs text-on-surface-variant">
-                  Uploaded {new Date(file.createdAt).toLocaleDateString()} • {formatBytes(file.fileSize)}
+                  {file.fileType === 'folder' ? 'Folder' : `${new Date(file.createdAt).toLocaleDateString()} • ${formatBytes(file.fileSize)}`}
                 </p>
               </div>
 
               <div className="flex gap-2 items-center opacity-0 group-hover:opacity-100 transition-all shrink-0">
-
-                {/* NEW SHARE BUTTON */}
-                <button
-                  onClick={() => setSharingFile(file)}
-                  className="p-2 text-on-surface-variant hover:text-primary transition-all bg-surface-container rounded-md"
-                  title="Share File"
-                >
-                  <span className="material-symbols-outlined text-[18px]">share</span>
-                </button>
-
-                {/* 4. The New Star Button */}
-                <button
-                  onClick={() => handleStarToggle(file.fileId, file.isStarred)}
-                  className={`p-2 transition-all bg-surface-container rounded-md ${file.isStarred ? 'text-[#de8eff] hover:text-[#de8eff]/80' : 'text-on-surface-variant hover:text-primary'}`}
-                >
-                  <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: file.isStarred ? "'FILL' 1" : "'FILL' 0" }}>
-                    star
-                  </span>
-                </button>
-
-                <button onClick={() => handleDownload(file.fileId, file.s3Key, file.fileName)} className="p-2 text-on-surface-variant hover:text-primary transition-all bg-surface-container rounded-md">
-                  <span className="material-symbols-outlined text-[18px]">download</span>
-                </button>
-                <button onClick={() => handleDelete(file.fileId, file.s3Key)} className="p-2 text-on-surface-variant hover:text-error transition-all bg-surface-container rounded-md">
-                  <span className="material-symbols-outlined text-[18px]">delete</span>
-                </button>
+                {file.fileType !== 'folder' && (
+                  <>
+                    <button onClick={() => setSharingFile(file)} className="p-2 text-on-surface-variant hover:text-primary transition-all bg-surface-container rounded-md"><span className="material-symbols-outlined text-[18px]">share</span></button>
+                    <button onClick={() => handleStarToggle(file.fileId, file.isStarred)} className={`p-2 transition-all bg-surface-container rounded-md ${file.isStarred ? 'text-[#de8eff]' : 'text-on-surface-variant hover:text-primary'}`}><span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: file.isStarred ? "'FILL' 1" : "'FILL' 0" }}>star</span></button>
+                    <button onClick={() => handleDownload(file.fileId, file.s3Key, file.fileName)} className="p-2 text-on-surface-variant hover:text-primary transition-all bg-surface-container rounded-md"><span className="material-symbols-outlined text-[18px]">download</span></button>
+                  </>
+                )}
+                <button onClick={() => handleDelete(file.fileId, file.s3Key)} className="p-2 text-on-surface-variant hover:text-error transition-all bg-surface-container rounded-md"><span className="material-symbols-outlined text-[18px]">delete</span></button>
               </div>
             </div>
           ))
         )}
       </div>
-      {/* Render the modal if a file is selected */}
-      {sharingFile && (
-        <ShareModal 
-          file={sharingFile} 
-          onClose={() => setSharingFile(null)} 
-        />
-      )}
+
+      {sharingFile && <ShareModal file={sharingFile} onClose={() => setSharingFile(null)} />}
     </div>
   );
 }

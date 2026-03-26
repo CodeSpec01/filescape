@@ -9,13 +9,13 @@ export default function UploadDropzone() {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   
-  const { refreshFiles } = useDashboard();
+  const { refreshFiles, currentFolderId } = useDashboard();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const processFileUpload = async (file: File) => {
     setIsUploading(true);
     try {
-      const response = await getPresignedUploadUrl(file.name, file.type, file.size);
+      const response = await getPresignedUploadUrl(file.name, file.type, file.size, currentFolderId);
       if (!response.success || !response.uploadUrl) {
         throw new Error(response.error || "Failed to generate secure upload URL");
       }
