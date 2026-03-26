@@ -14,7 +14,6 @@ export default function DashboardPage() {
     <div className="flex flex-col h-full overflow-hidden">
       <Header />
       
-      {/* Changed to flex-1 min-h-0 so it perfectly fills the remaining space */}
       <div className="flex flex-col md:flex-row gap-6 flex-1 min-h-0 w-full">
         
         {/* LEFT/CENTER AREA */}

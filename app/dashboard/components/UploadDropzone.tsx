@@ -68,7 +68,7 @@ export default function UploadDropzone() {
     if (file) processFileUpload(file);
   };
 
-  // NEW: Programmatically trigger the hidden input on click
+  // Programmatically trigger the hidden input on click
   const handleClick = () => {
     if (!isUploading && fileInputRef.current) {
       fileInputRef.current.click();
@@ -79,7 +79,6 @@ export default function UploadDropzone() {
     <div className="flex flex-col h-full">
       <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant mb-4">Secure Upload</h2>
       
-      {/* Added onClick and cursor-pointer to the main wrapper */}
       <div 
         onClick={handleClick}
         onDragOver={handleDragOver}
@@ -92,7 +91,6 @@ export default function UploadDropzone() {
           }`}
       >
         
-        {/* The input is now COMPLETELY hidden, so it doesn't block mouse events */}
         <input 
           id="file-upload-input"
           ref={fileInputRef}

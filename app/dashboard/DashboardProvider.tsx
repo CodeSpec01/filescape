@@ -95,7 +95,6 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   // --- DYNAMIC STORAGE MATH ---
   const storageLimitGB = 1;
   const totalBytes = files.reduce((acc, file) => acc + file.fileSize, 0);
-  // Calculate GB, max out at 2 decimals, default to 0 if extremely small
   const storageUsedGB = totalBytes > 0 ? Number((totalBytes / (1024 ** 3)).toFixed(4)) : 0;
 
   // Categorize files dynamically based on MIME type or extension
@@ -129,7 +128,6 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       icon: data.icon
     }))
     .sort((a, b) => b.percent - a.percent);
-  // ----------------------------
 
   return (
     <DashboardContext.Provider value={{

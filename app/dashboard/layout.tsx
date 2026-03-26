@@ -95,28 +95,27 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           position="bottom-right"
           toastOptions={{
             style: {
-              background: '#5C555C', // surface-container
-              color: '#e4e1e6', // secondary text
-              border: '1px solid rgba(72, 72, 73, 0.2)', // outline-variant/20
+              background: '#5C555C',
+              color: '#e4e1e6',
+              border: '1px solid rgba(72, 72, 73, 0.2)',
               fontSize: '14px',
             },
             success: {
               iconTheme: {
-                primary: '#de8eff', // primary
-                secondary: '#5C555C', // surface-container
+                primary: '#de8eff',
+                secondary: '#5C555C',
               },
             },
             error: {
               iconTheme: {
-                primary: '#ff6e84', // error
-                secondary: '#5C555C', // surface-container
+                primary: '#ff6e84',
+                secondary: '#5C555C',
               },
             },
           }}
         />
         <Sidebar />
 
-        {/* The DashboardProvider context makes this wrapper dynamic */}
         <DashboardContentWrapper>{children}</DashboardContentWrapper>
       </div>
     </DashboardProvider>
@@ -127,7 +126,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 function DashboardContentWrapper({ children }: { children: ReactNode }) {
   const { isSidebarOpen } = useDashboard();
   return (
-    // Changed to strictly h-screen with overflow-hidden and flex
     <main className={`flex-1 p-4 md:p-8 h-screen overflow-hidden flex flex-col transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
       {children}
     </main>

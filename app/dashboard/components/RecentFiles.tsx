@@ -55,7 +55,7 @@ export default function RecentFiles() {
   const handleGoBack = () => {
     if (folderHistory.length <= 1) return;
     const newHistory = [...folderHistory];
-    newHistory.pop(); // Remove current folder
+    newHistory.pop();
     const previousFolder = newHistory[newHistory.length - 1];
     setFolderHistory(newHistory);
     setCurrentFolderId(previousFolder.id);
@@ -98,7 +98,7 @@ export default function RecentFiles() {
       const hasChildren = files.some(f => f.parentId === fileId);
       if (hasChildren) {
         toast.error("Cannot delete: Folder is not empty.");
-        return; // Stop the deletion process immediately
+        return;
       }
     }
 

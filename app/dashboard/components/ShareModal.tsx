@@ -6,7 +6,7 @@ import { updateShareSettings } from "../../../actions/fileActions";
 import { useDashboard } from "../DashboardProvider";
 
 interface ShareModalProps {
-  file: any; // Using any here temporarily for ease, or use your FileData interface
+  file: any;
   onClose: () => void;
 }
 
@@ -16,7 +16,6 @@ export default function ShareModal({ file, onClose }: ShareModalProps) {
   
   const currentSettings = file.shareSettings || {};
   
-  // Calculate existing days or default to 7
   let initialDays = 7;
   if (currentSettings.expiresAt) {
     const diffTime = new Date(currentSettings.expiresAt).getTime() - Date.now();
@@ -47,7 +46,7 @@ export default function ShareModal({ file, onClose }: ShareModalProps) {
 
       if (response.success) {
         toast.success("Share settings updated!");
-        await refreshFiles(); // Refresh global state so the modal remembers next time!
+        await refreshFiles();
       } else throw new Error(response.error);
     } catch (error) {
       toast.error("Failed to update settings.");

@@ -22,12 +22,8 @@ const ddbClient = new DynamoDBClient({
 });
 
 // 3. Wrap it in the DocumentClient
-// This is a crucial step! The base client requires you to define data types explicitly 
-// (e.g., { S: "myString" }). The DocumentClient automatically translates standard 
-// JavaScript objects into DynamoDB formats, saving you hundreds of lines of code.
 export const dynamoDbClient = DynamoDBDocumentClient.from(ddbClient, {
   marshallOptions: {
-    // Automatically removes undefined fields so AWS doesn't throw validation errors
     removeUndefinedValues: true, 
   },
 });

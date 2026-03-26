@@ -53,7 +53,7 @@ export default async function SharePage(props: { params: Promise<{ fileId: strin
           Key: file.s3Key,
           ResponseContentDisposition: `attachment; filename="${file.fileName}"`,
         });
-        downloadUrl = await getSignedUrl(s3Client, s3Command, { expiresIn: 3600 }); // Valid for 1 hour so they can click it
+        downloadUrl = await getSignedUrl(s3Client, s3Command, { expiresIn: 3600 });
       }
     }
   } catch (error) {

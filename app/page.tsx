@@ -15,11 +15,6 @@ export default function Home() {
           <a className="text-[#e4e1e6] hover:text-[#de8eff] transition-colors" href="#">Security</a>
           <a className="text-[#e4e1e6] hover:text-[#de8eff] transition-colors" href="#">About</a>
         </div>
-        {/* <div className="flex items-center gap-4">
-          <button className="obsidian-gradient text-on-primary-fixed px-5 py-2 rounded-full text-sm font-bold tracking-tight hover:scale-95 active:scale-90 transition-transform shadow-[0_4px_12px_rgba(222,142,255,0.3)]">
-            Get Started
-          </button>
-        </div> */}
         <div className="flex items-center gap-4">
           <Show when="signed-out">
             <Link href="/sign-up" className="obsidian-gradient text-on-primary-fixed px-5 py-2 rounded-full text-sm font-bold tracking-tight hover:scale-95 active:scale-90 transition-transform shadow-[0_4px_12px_rgba(222,142,255,0.3)]">
@@ -53,15 +48,6 @@ export default function Home() {
           <p className="max-w-2xl text-on-surface-variant text-lg md:text-xl font-light leading-relaxed mb-12 px-4">
             High-performance cloud storage. Built with a scalable relational database and secure object storage for low-latency file management.
           </p>
-          {/* <div className="flex flex-col sm:flex-row items-center gap-4">
-            <button className="obsidian-gradient text-on-primary-fixed px-8 py-4 text-base font-bold flex items-center gap-2 hover:scale-95 transition-transform">
-              Initialize Deployment
-              <span className="material-symbols-outlined">arrow_forward</span>
-            </button>
-            <button className="bg-surface-container border border-outline-variant/30 text-on-surface px-8 py-4 text-base font-bold hover:bg-surface-container-high transition-colors">
-              Watch Interface Demo
-            </button>
-          </div> */}
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <Link href="/sign-up" className="obsidian-gradient text-on-primary-fixed px-8 py-4 text-base font-bold flex items-center gap-2 hover:scale-95 transition-transform rounded-lg">
               Initialize Deployment

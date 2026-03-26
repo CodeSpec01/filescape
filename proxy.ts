@@ -1,12 +1,12 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-// Define the routes that do NOT require authentication
+// routes that do NOT require authentication
 const isPublicRoute = createRouteMatcher(['/', '/sign-in(.*)', '/sign-up(.*)']);
 
 export default clerkMiddleware(async (auth, request) => {
-  // If the user tries to access a protected route, redirect them to the sign-in page
+  // redirect from protected route to the sign-in page
   if (!isPublicRoute(request)) {
-    await auth.protect(); // Notice the 'await' and the removal of the parentheses after auth
+    await auth.protect();
   }
 });
 

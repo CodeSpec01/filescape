@@ -7,6 +7,7 @@ import { PutCommand, DeleteCommand, QueryCommand, UpdateCommand } from "@aws-sdk
 import { s3Client, dynamoDbClient } from "../lib/aws"; // Adjust the path if your lib folder is elsewhere
 import crypto from "crypto";
 
+const GSI_NAME = process.env.NEXT_PUBLIC_DYNAMODB_GSI_NAME!;
 const BUCKET_NAME = process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME!;
 const TABLE_NAME = process.env.NEXT_PUBLIC_DYNAMODB_TABLE_NAME!;
 
@@ -45,7 +46,7 @@ export async function getPresignedUploadUrl(fileName: string, fileType: string, 
         s3Key: s3Key,
         isStarred: false,
         parentId: parentId,
-        createdAt: new Date().toISOString(), // This acts as our Sort Key!
+        createdAt: new Date().toISOString(),
       },
     });
 
@@ -59,9 +60,6 @@ export async function getPresignedUploadUrl(fileName: string, fileType: string, 
     return { success: false, error: "Failed to initialize upload." };
   }
 }
-
-// Make sure you have this variable at the top of your file with the others:
-const GSI_NAME = process.env.NEXT_PUBLIC_DYNAMODB_GSI_NAME!;
 
 export async function getUserFiles() {
   try {
@@ -105,7 +103,6 @@ export async function getDownloadUrl(s3Key: string, originalFileName: string) {
     const command = new GetObjectCommand({
       Bucket: BUCKET_NAME,
       Key: s3Key,
-      // This forces the browser to trigger a "Save As" download instead of just opening it
       ResponseContentDisposition: `attachment; filename="${originalFileName}"`,
     });
 
@@ -183,7 +180,6 @@ export async function updateShareSettings(
     const command = new UpdateCommand({
       TableName: TABLE_NAME,
       Key: { fileId: fileId },
-      // We store the settings as a JSON object in DynamoDB
       UpdateExpression: "SET shareSettings = :settings",
       ExpressionAttributeValues: {
         ":settings": settings,
@@ -211,9 +207,9 @@ export async function createFolder(folderName: string, parentId: string = "root"
         fileId: folderId,
         userId: userId,
         fileName: folderName,
-        fileType: "folder", // This is how UI knows it's a folder
+        fileType: "folder",
         fileSize: 0,
-        s3Key: `folder-${folderId}`, // Placeholder, folders don't have physical S3 files
+        s3Key: `folder-${folderId}`,
         isStarred: false,
         parentId: parentId,
         createdAt: new Date().toISOString(),

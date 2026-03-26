@@ -17,7 +17,6 @@ export default function StorageStats() {
       </div>
 
       <div className="text-5xl font-black font-headline text-primary mb-2">
-        {/* If the number is super small (e.g. 0.0004 GB), render it, otherwise standard GB */}
         {storageUsedGB > 0 && storageUsedGB < 0.01 ? "< 0.01" : storageUsedGB}
         <span className="text-2xl"> GB</span>
       </div>
