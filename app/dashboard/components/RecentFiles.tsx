@@ -23,10 +23,15 @@ export default function RecentFiles() {
 
   const filteredFiles = files.filter(file => {
     const matchesSearch = file.fileName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      activeCategory === "home" ? true :
-        activeCategory === "recent" ? true :
-          activeCategory === "starred" ? file.isStarred : true;
+    
+    // Date Math: 7 days * 24 hours * 60 minutes * 60 seconds * 1000 milliseconds
+    const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    const fileDate = new Date(file.createdAt).getTime();
+
+    const matchesCategory = 
+      activeCategory === "home" ? true : 
+      activeCategory === "recent" ? fileDate >= sevenDaysAgo : 
+      activeCategory === "starred" ? file.isStarred : true;
 
     return matchesSearch && matchesCategory;
   });
