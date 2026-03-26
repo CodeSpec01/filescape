@@ -122,22 +122,22 @@ export async function deleteFile(fileId: string, s3Key: string) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
-    if (!s3Key.startsWith(`${userId}/`)) {
-      throw new Error("Forbidden");
+    if (!s3Key.startsWith("folder-")) {
+      if (!s3Key.startsWith(`${userId}/`)) {
+        throw new Error("Forbidden");
+      }
+      const s3Command = new DeleteObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: s3Key,
+      });
+      await s3Client.send(s3Command);
     }
-
-    // 1. Delete the physical file from S3
-    const s3Command = new DeleteObjectCommand({
-      Bucket: BUCKET_NAME,
-      Key: s3Key,
-    });
-    await s3Client.send(s3Command);
 
     // 2. Delete the metadata record from DynamoDB
     const dbCommand = new DeleteCommand({
       TableName: TABLE_NAME,
       Key: {
-        fileId: fileId, // Partition key required to delete
+        fileId: fileId,
       },
     });
     await dynamoDbClient.send(dbCommand);

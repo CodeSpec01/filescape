@@ -91,14 +91,27 @@ export default function RecentFiles() {
     } catch (error) { console.error(error); }
   };
 
-  const handleDelete = async (fileId: string, s3Key: string) => {
+  const handleDelete = async (fileId: string, s3Key: string, fileType: string) => {
+    
+    // THE SAFETY CHECK: If it's a folder, ensure it has no children
+    if (fileType === 'folder') {
+      const hasChildren = files.some(f => f.parentId === fileId);
+      if (hasChildren) {
+        toast.error("Cannot delete: Folder is not empty.");
+        return; // Stop the deletion process immediately
+      }
+    }
+
     const previousFiles = [...files];
-    setFiles(files.filter(file => file.fileId !== fileId));
+    setFiles(files.filter(file => file.fileId !== fileId)); 
+    
     try {
       const response = await deleteFile(fileId, s3Key);
       if (!response.success) throw new Error("Database deletion failed");
+      toast.success(fileType === 'folder' ? "Folder deleted" : "File deleted");
     } catch (error) {
-      toast.error("Failed to delete file. Reverting changes");
+      console.error(error);
+      toast.error("Failed to delete. Reverting changes.");
       setFiles(previousFiles);
     }
   };
@@ -200,7 +213,7 @@ export default function RecentFiles() {
                     <button onClick={() => handleDownload(file.fileId, file.s3Key, file.fileName)} className="p-2 text-on-surface-variant hover:text-primary transition-all bg-surface-container rounded-md"><span className="material-symbols-outlined text-[18px]">download</span></button>
                   </>
                 )}
-                <button onClick={() => handleDelete(file.fileId, file.s3Key)} className="p-2 text-on-surface-variant hover:text-error transition-all bg-surface-container rounded-md"><span className="material-symbols-outlined text-[18px]">delete</span></button>
+                <button onClick={() => handleDelete(file.fileId, file.s3Key, file.fileType)} className="p-2 text-on-surface-variant hover:text-error transition-all bg-surface-container rounded-md"><span className="material-symbols-outlined text-[18px]">delete</span></button>
               </div>
             </div>
           ))
