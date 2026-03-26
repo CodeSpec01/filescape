@@ -1,32 +1,52 @@
 "use client";
 
 import { useState } from "react";
+import { getPresignedUploadUrl } from "../../../actions/fileActions"; 
 
 export default function UploadDropzone() {
   const [isUploading, setIsUploading] = useState(false);
 
-  // --- SKELETON FUNCTIONS ---
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    console.log(`[UI] Selected file: ${file.name} (${file.size} bytes)`);
-    triggerMockUpload();
-  };
-
-  const triggerMockUpload = () => {
     setIsUploading(true);
-    console.log(`[AWS S3] Generating Presigned URL...`);
-    console.log(`[AWS S3] Uploading file chunks...`);
-    
-    // Simulate a 2-second upload delay
-    setTimeout(() => {
-      console.log(`[DynamoDB] Saving file metadata...`);
+
+    try {
+      // 1. Call your Next.js Server Action to log the file in DynamoDB 
+      //    and get the temporary secure S3 upload ticket.
+      const response = await getPresignedUploadUrl(file.name, file.type, file.size);
+
+      if (!response.success || !response.uploadUrl) {
+        throw new Error(response.error || "Failed to generate secure upload URL");
+      }
+
+      // 2. Perform the actual file upload directly to AWS S3!
+      //    This bypasses Vercel/Next.js entirely, saving you bandwidth and preventing timeouts.
+      const uploadResponse = await fetch(response.uploadUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+
+      if (uploadResponse.ok) {
+        alert("File securely uploaded to your AWS Vault!");
+        // TODO: Soon, we will trigger the UI to refresh the file list here.
+      } else {
+        throw new Error("AWS S3 rejected the upload.");
+      }
+      
+    } catch (error) {
+      console.error("[Upload Error]:", error);
+      alert("Upload failed. Check the console for details.");
+    } finally {
       setIsUploading(false);
-      alert("File uploaded successfully! (Mock)");
-    }, 2000);
+      // Reset the hidden input so the user can select the exact same file again if they want
+      event.target.value = '';
+    }
   };
-  // --------------------------
 
   return (
     <div className="flex flex-col h-full">
@@ -36,17 +56,17 @@ export default function UploadDropzone() {
         
         {/* Hidden File Input */}
         <input 
+          id="file-upload-input"
           type="file" 
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
           onChange={handleFileChange}
           disabled={isUploading}
-          id="file-upload-input"
         />
 
         {isUploading ? (
           <div className="flex flex-col items-center text-primary">
             <span className="material-symbols-outlined animate-spin mb-2 text-3xl">sync</span>
-            <span className="text-sm font-bold tracking-widest uppercase">Encrypting...</span>
+            <span className="text-sm font-bold tracking-widest uppercase">Transmitting...</span>
           </div>
         ) : (
           <>
