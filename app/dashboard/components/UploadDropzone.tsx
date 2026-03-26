@@ -2,16 +2,18 @@
 
 import { useState } from "react";
 import { getPresignedUploadUrl } from "../../../actions/fileActions"; 
+import { useDashboard } from "../DashboardProvider";
 
 export default function UploadDropzone() {
   const [isUploading, setIsUploading] = useState(false);
+  const { refreshFiles } = useDashboard();
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     setIsUploading(true);
-
+    
     try {
       // 1. Call your Next.js Server Action to log the file in DynamoDB 
       //    and get the temporary secure S3 upload ticket.
@@ -32,7 +34,7 @@ export default function UploadDropzone() {
       });
 
       if (uploadResponse.ok) {
-        alert("File securely uploaded to your AWS Vault!");
+        await refreshFiles();
         // TODO: Soon, we will trigger the UI to refresh the file list here.
       } else {
         throw new Error("AWS S3 rejected the upload.");

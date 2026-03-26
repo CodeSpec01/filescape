@@ -1,23 +1,57 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { getUserFiles } from "../../actions/fileActions";
+
+interface FileData {
+  fileId: string;
+  fileName: string;
+  fileSize: number;
+  fileType: string;
+  createdAt: string;
+  isStarred: boolean;
+  s3Key: string;
+}
+
+export interface BreakdownItem {
+  type: string;
+  size: string;
+  percent: number;
+  color: string;
+  icon: string;
+}
 
 interface DashboardContextType {
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  activeCategory: "home" | "recent" | "starred";
-  setActiveCategory: (category: "home" | "recent" | "starred") => void;
-  isSidebarOpen: boolean;
-  setIsSidebarOpen: (val: boolean | ((prev: boolean) => boolean)) => void;
-  isRightPanelOpen: boolean;
-  setIsRightPanelOpen: (val: boolean | ((prev: boolean) => boolean)) => void;
-  isS3StatusOpen: boolean;
-  setIsS3StatusOpen: (val: boolean | ((prev: boolean) => boolean)) => void;
+  searchQuery: string; setSearchQuery: (q: string) => void;
+  activeCategory: "home" | "recent" | "starred"; setActiveCategory: (c: "home" | "recent" | "starred") => void;
+  isSidebarOpen: boolean; setIsSidebarOpen: (v: any) => void;
+  isRightPanelOpen: boolean; setIsRightPanelOpen: (v: any) => void;
+  isS3StatusOpen: boolean; setIsS3StatusOpen: (v: any) => void;
+  
+  // New Global Data State
+  files: FileData[];
+  setFiles: (files: FileData[]) => void;
+  isLoadingFiles: boolean;
+  isRefreshing: boolean;
+  refreshFiles: () => Promise<void>;
+  
+  // Storage Math
   storageUsedGB: number;
   storageLimitGB: number;
+  fileBreakdown: BreakdownItem[];
 }
 
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
+
+// Helper function for byte formatting
+function formatBytes(bytes: number, decimals = 2) {
+  if (!+bytes) return '0 Bytes';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+}
 
 export function DashboardProvider({ children }: { children: ReactNode }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,9 +60,63 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(true);
   const [isS3StatusOpen, setIsS3StatusOpen] = useState(true);
   
-  // Global storage values to sync across the app
-  const storageUsedGB = 4.2;
+  const [files, setFiles] = useState<FileData[]>([]);
+  const [isLoadingFiles, setIsLoadingFiles] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const refreshFiles = async () => {
+    setIsRefreshing(true);
+    const result = await getUserFiles();
+    if (result.success && result.files) {
+      setFiles(result.files as FileData[]);
+    }
+    setIsRefreshing(false);
+    setIsLoadingFiles(false);
+  };
+
+  // Initial load
+  useEffect(() => {
+    refreshFiles();
+  }, []);
+
+  // --- DYNAMIC STORAGE MATH ---
   const storageLimitGB = 15;
+  const totalBytes = files.reduce((acc, file) => acc + file.fileSize, 0);
+  // Calculate GB, max out at 2 decimals, default to 0 if extremely small
+  const storageUsedGB = totalBytes > 0 ? Number((totalBytes / (1024 ** 3)).toFixed(4)) : 0;
+
+  // Categorize files dynamically based on MIME type or extension
+  const breakdownMap = {
+    Images: { size: 0, color: "bg-tertiary", icon: "image" },
+    Documents: { size: 0, color: "bg-primary-fixed", icon: "description" },
+    Code: { size: 0, color: "bg-primary", icon: "code" },
+    Videos: { size: 0, color: "bg-error", icon: "movie" },
+    Other: { size: 0, color: "bg-surface-variant", icon: "draft" }
+  };
+
+  files.forEach(file => {
+    const type = file.fileType.toLowerCase();
+    const name = file.fileName.toLowerCase();
+
+    if (type.includes('image')) breakdownMap.Images.size += file.fileSize;
+    else if (type.includes('pdf') || type.includes('document') || type.includes('sheet') || name.endsWith('.pdf')) breakdownMap.Documents.size += file.fileSize;
+    else if (type.includes('video') || name.endsWith('.mp4')) breakdownMap.Videos.size += file.fileSize;
+    else if (type.includes('json') || name.endsWith('.js') || name.endsWith('.cpp') || name.endsWith('.c') || name.endsWith('.h') || name.endsWith('.ts')) breakdownMap.Code.size += file.fileSize;
+    else breakdownMap.Other.size += file.fileSize;
+  });
+
+  // Convert the map to an array, remove empty categories, and sort by largest first
+  const fileBreakdown: BreakdownItem[] = Object.entries(breakdownMap)
+    .filter(([_, data]) => data.size > 0)
+    .map(([type, data]) => ({
+      type,
+      size: formatBytes(data.size),
+      percent: totalBytes > 0 ? Math.round((data.size / totalBytes) * 100) : 0,
+      color: data.color,
+      icon: data.icon
+    }))
+    .sort((a, b) => b.percent - a.percent);
+  // ----------------------------
 
   return (
     <DashboardContext.Provider value={{
@@ -37,7 +125,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       isSidebarOpen, setIsSidebarOpen,
       isRightPanelOpen, setIsRightPanelOpen,
       isS3StatusOpen, setIsS3StatusOpen,
-      storageUsedGB, storageLimitGB
+      files, setFiles, isLoadingFiles, isRefreshing, refreshFiles,
+      storageUsedGB, storageLimitGB, fileBreakdown
     }}>
       {children}
     </DashboardContext.Provider>

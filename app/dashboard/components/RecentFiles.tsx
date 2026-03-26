@@ -1,19 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useDashboard } from "../DashboardProvider";
-// 1. Import the new toggleStarFile action
-import { getUserFiles, getDownloadUrl, deleteFile, toggleStarFile } from "../../../actions/fileActions";
-
-interface FileData {
-  fileId: string;
-  fileName: string;
-  fileSize: number;
-  fileType: string;
-  createdAt: string;
-  isStarred: boolean;
-  s3Key: string;
-}
+import { getDownloadUrl, deleteFile, toggleStarFile } from "../../../actions/fileActions";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 Bytes';
@@ -25,27 +13,12 @@ function formatBytes(bytes: number, decimals = 2) {
 }
 
 export default function RecentFiles() {
-  const [files, setFiles] = useState<FileData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false); // Track manual refreshes
-  
-  const { searchQuery, activeCategory } = useDashboard();
-
-  // 2. Extract load logic so it can be called by the refresh button
-  const loadData = async () => {
-    setIsRefreshing(true);
-    const result = await getUserFiles();
-    if (result.success && result.files) {
-      setFiles(result.files as FileData[]);
-    }
-    setIsRefreshing(false);
-    setIsLoading(false);
-  };
-
-  // Initial load
-  useEffect(() => {
-    loadData();
-  }, []);
+  // 1. Pull EVERYTHING from the global context instead of managing it locally
+  const { 
+    searchQuery, activeCategory, 
+    files, setFiles, 
+    isLoadingFiles, isRefreshing, refreshFiles 
+  } = useDashboard();
 
   const filteredFiles = files.filter(file => {
     const matchesSearch = file.fileName.toLowerCase().includes(searchQuery.toLowerCase());
@@ -84,19 +57,16 @@ export default function RecentFiles() {
     }
   };
 
-  // 3. The Star Toggle Logic
   const handleStarToggle = async (fileId: string, currentStatus: boolean) => {
-    // Optimistic UI update: Flip the star instantly
     setFiles(files.map(f => f.fileId === fileId ? { ...f, isStarred: !currentStatus } : f));
-    
-    // Tell DynamoDB to update the record
     const response = await toggleStarFile(fileId, currentStatus);
     if (!response.success) {
-      // If it fails, revert the UI back
       setFiles(files.map(f => f.fileId === fileId ? { ...f, isStarred: currentStatus } : f));
       alert("Failed to update star status.");
     }
   };
+
+  // ... KEEP YOUR EXACT SAME return (...) JSX DOWN HERE ...
 
   return (
     <div className="p-6 flex flex-col h-full overflow-hidden">
@@ -108,7 +78,7 @@ export default function RecentFiles() {
         
         {/* Refresh Button */}
         <button 
-          onClick={loadData}
+          onClick={refreshFiles}
           disabled={isRefreshing}
           className="p-2 text-on-surface-variant hover:text-primary transition-colors bg-surface-container-lowest border border-outline-variant/10 rounded-lg flex items-center justify-center disabled:opacity-50"
           title="Refresh Files"
@@ -120,7 +90,7 @@ export default function RecentFiles() {
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-2 pr-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        {isLoading ? (
+        {isLoadingFiles ? (
           <div className="flex justify-center items-center h-full text-primary">
             <span className="material-symbols-outlined animate-spin text-3xl">sync</span>
           </div>
